@@ -1,1 +1,0 @@
-from de_spel import main

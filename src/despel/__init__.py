@@ -1,0 +1,1 @@
+from despel import main, words

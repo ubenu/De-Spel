@@ -11,7 +11,7 @@ from kivy.uix.screenmanager import Screen
 from kivy.core.window import Window
 from kivy.properties import ObjectProperty
 
-from de_spel.words import Words
+from despel.words import Words
         
 ###########################################################################################################################################    
 class DeSpelRoot(BoxLayout):
@@ -53,12 +53,27 @@ class GameScreen(Screen, Words):
     """
     The game screen
     """
-    articles = ObjectProperty()
+    articles, stakes = ObjectProperty(), ObjectProperty()
+    word = ObjectProperty()
+
     def __init__(self, *args, **kwargs):
         super(GameScreen, self).__init__(*args, **kwargs)
         
     def on_play(self):
-        print(self.word.text)
+        article, stake = '', ''
+        current_word = self.word.text
+        for btn in self.articles.children:
+            if btn.state == 'down':
+                article = btn.text.lower()
+        for btn in self.stakes.children:
+            if btn.state == 'down':
+                stake = btn.text.lower()
+        if article and stake and current_word:
+            self.play(current_word, article, stake)
+            
+    def on_new_word(self):
+        word_info = self.draw_word()
+        print(word_info)
         
 
 ###########################################################################################################################################    
@@ -97,19 +112,20 @@ class DeSpelApp(App):
     def getText(self):
         return ("Goedendag!"
                 "\n\n"
-                "    Het idee voor [i][b]De Spel[/b][/i] was van Wim Hardeman "
+                "Het idee voor [i][b]De Spel[/b][/i] was van Wim Hardeman "
                 "en zij heeft ook de spelregels bedacht."
                 "\n"
-                "    Marietje schilstra, onder de schuilnaam [i]ubenu[/i], heeft de Toep* voor [i]De Spel[/i] geschreven, "
-                "in de geheimtaal [ref=python][u]python[/u][/ref]. Voor het ontwikkelen van " 
+                "Onder de schuilnaam [i]ubenu[/i], heeft Marietje Schilstra de Toep* voor [i]De Spel[/i] geschreven, "
+                "in de codeertaal [ref=python][u]python[/u][/ref]. Voor het ontwikkelen van " 
                 "de gebruikersvensters heeft zij gebruik gemaakt van de "
                 "[ref=kivy][u]kivy[/u][/ref]-bibliotheek.  " 
-                "[ref=source][u]Hier[/u][/ref] vindt u het geheimschrift."
-                "\n\n\n\n"
-                "    * [i]Toep[/i], kort voor [i]Toepassing[/i], is Nederlands voor [i]App[/i]. "
+                "[ref=source][u]Hier[/u][/ref] vindt u de codering."
                 "\n\n"
+                "Deze Toep is uitgebracht onder de [u][i][ref=gnu_gpl]GNU General Public License v3.0[/ref][i][/u]\n"
+                "\n\n"
+                "[sub]* [i]Toep[/i], kort voor [i]Toepassing[/i], is Nederlands voor [i]App[/i].[/sub] "
+
                 
-#                "This App is under the [b][ref=mit]MIT Licence[/ref][/b]\n"
             )
          
     def on_ref_press(self, instance, ref):
@@ -117,7 +133,7 @@ class DeSpelApp(App):
             "kivy": "http://kivy.org/#home",
             "python": "https://www.python.org/",
             "source": "https://github.com/ubenu/NieuweWoordenLeren",
-#            "mit": "https://github.com/gopar/Kivy-Tutor/blob/master/LICENSE.md",
+            "gnu_gpl": "https://github.com/ubenu/DeSpel/blob/master/LICENSE",
              }
         if ref in _dict:
             webbrowser.open(_dict[ref])

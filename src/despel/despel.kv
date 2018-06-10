@@ -71,21 +71,28 @@
 			
 
 <GameScreen>:
-	orientation: "vertical"
 	articles: blo_articles
 	stakes: blo_stakes
 	word: lbl_word
 	BoxLayout:
+		orientation: "vertical"
 		BoxLayout:
 			size_hint_y: 1
 			Label:
 				id: lbl_word
-				size_hint_x: 7
+				size_hint_x: 5
 				markup: True	
 				text: "woord"
 				
 			Button:
-				id: btn_play
+				id: btn_new_word
+				size_hint_x: 1
+				markup: True	
+				text: "Nieuw woord"
+				on_release: root.on_new_word()		
+
+			Button:
+				id: btn_new_word
 				size_hint_x: 1
 				markup: True	
 				text: "Speel"
