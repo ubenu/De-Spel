@@ -50,7 +50,7 @@ class Words(object):
             
     def draw_word(self):
         sample_index = numpy.random.choice(self.player.index, 1, replace=True)
-        return self.player.loc[sample_index]
+        return self.player.loc[sample_index, :]
 
     def open_word_list(self, file_path):
         try:

@@ -9,7 +9,7 @@ from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.screenmanager import Screen
 from kivy.core.window import Window
-from kivy.properties import ObjectProperty
+from kivy.properties import ObjectProperty, StringProperty
 
 from despel.words import Words
         
@@ -58,6 +58,7 @@ class GameScreen(Screen, Words):
 
     def __init__(self, *args, **kwargs):
         super(GameScreen, self).__init__(*args, **kwargs)
+        self.current_word_pack = None
         
     def on_play(self):
         article, stake = '', ''
@@ -69,11 +70,13 @@ class GameScreen(Screen, Words):
             if btn.state == 'down':
                 stake = btn.text.lower()
         if article and stake and current_word:
-            self.play(current_word, article, stake)
+            self.play(self.current_word_pack.Woord.to_string(index=False).lower(), self.current_word_pack.Lidwoord.to_string(index=False).lower(), stake)
             
     def on_new_word(self):
-        word_info = self.draw_word()
-        print(word_info)
+        self.current_word_pack = self.draw_word()
+        if not (self.current_word_pack is None or self.word is None):
+            new_word = self.current_word_pack.Woord.to_string(index=False)
+            self.word.text = new_word
         
 
 ###########################################################################################################################################    
@@ -115,7 +118,7 @@ class DeSpelApp(App):
                 "Het idee voor [i][b]De Spel[/b][/i] was van Wim Hardeman "
                 "en zij heeft ook de spelregels bedacht."
                 "\n"
-                "Onder de schuilnaam [i]ubenu[/i], heeft Marietje Schilstra de Toep* voor [i]De Spel[/i] geschreven, "
+                "Onder de schuilnaam [i]ubenu[/i] heeft Marietje Schilstra de Toep* voor [i]De Spel[/i] geschreven, "
                 "in de codeertaal [ref=python][u]python[/u][/ref]. Voor het ontwikkelen van " 
                 "de gebruikersvensters heeft zij gebruik gemaakt van de "
                 "[ref=kivy][u]kivy[/u][/ref]-bibliotheek.  " 
@@ -132,8 +135,8 @@ class DeSpelApp(App):
         _dict = {
             "kivy": "http://kivy.org/#home",
             "python": "https://www.python.org/",
-            "source": "https://github.com/ubenu/NieuweWoordenLeren",
-            "gnu_gpl": "https://github.com/ubenu/DeSpel/blob/master/LICENSE",
+            "source": "https://github.com/ubenu/DeSpel",
+            "gnu_gpl": "https://github.com/ubenu/DeSpel/blob/master/src/despel/LICENSE",
              }
         if ref in _dict:
             webbrowser.open(_dict[ref])
