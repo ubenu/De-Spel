@@ -6,10 +6,12 @@ Created on 29 May 2018
 import webbrowser
 
 from kivy.app import App
+from kivy.uix.popup import Popup
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.screenmanager import Screen
+from kivy.clock import Clock
 from kivy.core.window import Window
-from kivy.properties import ObjectProperty, StringProperty
+from kivy.properties import ObjectProperty
 
 from despel.words import Words
         
@@ -54,11 +56,12 @@ class GameScreen(Screen, Words):
     The game screen
     """
     articles, stakes = ObjectProperty(), ObjectProperty()
-    word = ObjectProperty()
+    word, heap = ObjectProperty(), ObjectProperty()
 
     def __init__(self, *args, **kwargs):
+        
         super(GameScreen, self).__init__(*args, **kwargs)
-        self.current_word_pack = None
+        super(Words, self).__init__()
         
     def on_play(self):
         article, stake = '', ''
@@ -70,15 +73,77 @@ class GameScreen(Screen, Words):
             if btn.state == 'down':
                 stake = btn.text.lower()
         if article and stake and current_word:
-            self.play(self.current_word_pack.Woord.to_string(index=False).lower(), self.current_word_pack.Lidwoord.to_string(index=False).lower(), stake)
+            self.play(article, stake)
             
     def on_new_word(self):
-        self.current_word_pack = self.draw_word()
-        if not (self.current_word_pack is None or self.word is None):
-            new_word = self.current_word_pack.Woord.to_string(index=False)
-            self.word.text = new_word
-        
+        self.draw_word()
+        try:
+            word = self.current_word_pack.Woord.to_string(index=False)
+            heap = self.current_word_pack.Stapel.to_string(index=False).lower()
+            self.word.text = word
+            self.heap.text = "Stapel:\n{}".format(heap)
+            for btn in self.stakes.children:
+                btn.state = 'normal'
+                #btn.active = True # werkt niet: need to find out how to enable/disable buttons
+                stake = btn.name.lower()
+                scoring_for_heap = self.scoring[self.scoring.Stapel.str.lower() == heap]
+                if scoring_for_heap.Inzet.str.lower().isin([stake,]).any():
+                    scoring_for_stake = scoring_for_heap[scoring_for_heap.Inzet.str.lower() == stake]
+                    corr = scoring_for_stake[scoring_for_stake.Antwoord.str.lower() == 'goed']
+                    incorr = scoring_for_stake[scoring_for_stake.Antwoord.str.lower() == 'fout']
+                    pnts_corr = corr.Punten.iloc[0]
+                    pnts_incorr = -incorr.Punten.iloc[0]
+                    btn.text = "{}\nGoed: {:d} punten erbij\nFout: {:d} punten eraf".format(btn.name, pnts_corr, pnts_incorr)
+                else:
+                    btn.text = btn.name
+                    #btn.active = False
 
+        except Exception as e:
+            print(e)
+            print("Fout opgetreden bij trekken van nieuw woord")
+        
+###########################################################################################################################################    
+class ResultPopup(Popup):
+    """
+    Widget that pops up to inform users whether they got the answer right or wrong
+    """
+    message = ObjectProperty()
+    close_button = ObjectProperty()
+    
+    def __init__(self, *args, **kwargs):
+        super(ResultPopup, self).__init__(*args, **kwargs)
+        
+    def open(self, points, heap, correct=True, word="", article=""):
+        # If answer is correct, take off button if it's visible
+        if correct:
+            if self.close_button in self.content.children:
+                self.content.remove_widget(self.close_button)
+        # If answer is not correct, display button if it's hidden
+        else:
+            if self.close_button not in self.content.children:
+                self.content.add_widget(self.close_button)
+                
+        # Prepare message to display
+        self.message.text = self._prep_message(correct)
+        
+        # Display popup
+        super(ResultPopup, self).open()
+        if correct:
+            Clock.schedule_once(self.dismiss, 1)
+            
+    def _prep_message(self, points, heap, correct=True, word="", article=""):
+        if correct:
+            return (
+                "Goed!\nEr worden {} punten bij het totaal opgeteld"
+                "en het woord gaat naar {}.".format(points, heap)
+                )
+        else:
+            return (
+                "Fout!  Het is [b]{}[/b] {}."
+                "\nEr worden {} punten bij het totaal opgeteld"
+                " en het woord gaat naar {}.".format(article, word, points, heap)
+                    )
+        
 ###########################################################################################################################################    
 class AddLocationScreen(Screen):
     """

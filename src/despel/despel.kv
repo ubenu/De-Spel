@@ -74,6 +74,7 @@
 	articles: blo_articles
 	stakes: blo_stakes
 	word: lbl_word
+	heap: lbl_heap
 	BoxLayout:
 		orientation: "vertical"
 		BoxLayout:
@@ -83,6 +84,12 @@
 				size_hint_x: 5
 				markup: True	
 				text: "spel"
+				
+			Label:
+				id: lbl_heap
+				size_hint_x: 1
+				markup: True
+				text: "Stapel:\nPlatina"
 				
 			Button:
 				id: btn_new_word
@@ -103,6 +110,7 @@
 			size_hint_y: 1			
 			ArticleToggle:
 				text: "De"
+				state: 'down'
 
 			ArticleToggle:
 				text: "Het"
@@ -116,16 +124,48 @@
 			id: blo_stakes
 			size_hint_y: 1
 			StakeToggle:
+				name: "Zilver"
 				text: "Zilver"
 
 			StakeToggle:
+				name: "Goud"
 				text: "Goud"
 
 			StakeToggle:
+				name: "Platina"
 				text: "Platina"
+				state: 'down'
 				
 		BoxLayout:
 			size_hint_y: 4
+
+
+<ResultPopup>:
+	message: message
+	close_button: close_button
+	size_hint: 0.8, 0.8
+	title: "Uitslag"
+	title_size: root.height * 0.05
+	separator_color: COLOR(GREEN)
+	auto_dismiss: False
+	markup: True
+	BoxLayout:
+		orientation: "vertical"
+		padding: root.width * 0.02, root.height * 0.02
+		spacing: min(root.width, root.height) * 0.02
+		Label:
+			id: message
+			text: "Zuigspeen tekst"
+			halign: "center"
+			font_size: root.height / 10
+			text_size: self.width, None
+			center_y: 0.5
+		Button:
+			id: close_button
+			text: "Sluiten"
+			size_hint: 1, None
+			height: root.height /8
+			on_release: root.dismiss()
 		
 				
 <AddLocationScreen>:
