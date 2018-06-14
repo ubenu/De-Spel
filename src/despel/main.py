@@ -55,36 +55,62 @@ class GameScreen(Screen, Words):
     """
     The game screen
     """
-    articles, stakes = ObjectProperty(), ObjectProperty()
-    word, heap = ObjectProperty(), ObjectProperty()
+    ui_articles, ui_stakes, ui_heaps = ObjectProperty(), ObjectProperty(), ObjectProperty()
+    ui_word, ui_heap_current, ui_total = ObjectProperty(), ObjectProperty(), ObjectProperty()
+    ui_draw, ui_go = ObjectProperty(), ObjectProperty()
 
     def __init__(self, *args, **kwargs):
-        
-        super(GameScreen, self).__init__(*args, **kwargs)
         super(Words, self).__init__()
+        super(GameScreen, self).__init__(*args, **kwargs)
+        self.result_popup = ResultPopup()
+        self.ui_word.text = "Hello"
         
-    def on_play(self):
+        
+    def on_state_changed(self):
+        self.ui_go.disabled = True
+        self.ui_draw.disabled = True
         article, stake = '', ''
-        current_word = self.word.text
-        for btn in self.articles.children:
+        current_word = self.ui_word.text
+        for btn in self.ui_articles.children:
             if btn.state == 'down':
-                article = btn.text.lower()
-        for btn in self.stakes.children:
+                article = btn.name.lower()
+        for btn in self.ui_stakes.children:
             if btn.state == 'down':
-                stake = btn.text.lower()
+                stake = btn.name.lower()
         if article and stake and current_word:
-            self.play(article, stake)
-            
-    def on_new_word(self):
+            self.ui_draw.disabled = False
+            self.ui_go.disabled = False
+        
+    def on_go(self):
+        article, stake = '', ''
+        for btn in self.ui_articles.children:
+            if btn.state == 'down':
+                article = btn.name.lower()
+        for btn in self.ui_stakes.children:
+            if btn.state == 'down':
+                stake = btn.name.lower()
+        if article and stake:
+            self.set_result(article, stake)
+            corr_art = self.current_word_pack.Lidwoord.iloc[0]
+            word = self.current_word_pack.Woord.iloc[0].lower()
+            correct = corr_art.lower() == article.lower()             
+            self.result_popup.open(correct, word, corr_art)
+            self.ui_total.text = "Totaal: {}".format(self.get_total())
+            dist = self.get_heap_distribution()
+            self.ui_heaps.text = dist.to_string(index=False, justify="left")
+                   
+    def on_draw(self):
         self.draw_word()
         try:
             word = self.current_word_pack.Woord.to_string(index=False)
             heap = self.current_word_pack.Stapel.to_string(index=False).lower()
-            self.word.text = word
-            self.heap.text = "Stapel:\n{}".format(heap)
-            for btn in self.stakes.children:
+            self.ui_word.text = word
+            self.ui_heap_current.text = "Stapel:\n{}".format(heap)
+            for btn in self.ui_articles.children:
                 btn.state = 'normal'
-                #btn.active = True # werkt niet: need to find out how to enable/disable buttons
+            for btn in self.ui_stakes.children:
+                btn.state = 'normal'
+                btn.disabled = False 
                 stake = btn.name.lower()
                 scoring_for_heap = self.scoring[self.scoring.Stapel.str.lower() == heap]
                 if scoring_for_heap.Inzet.str.lower().isin([stake,]).any():
@@ -96,7 +122,7 @@ class GameScreen(Screen, Words):
                     btn.text = "{}\nGoed: {:d} punten erbij\nFout: {:d} punten eraf".format(btn.name, pnts_corr, pnts_incorr)
                 else:
                     btn.text = btn.name
-                    #btn.active = False
+                    btn.disabled = True
 
         except Exception as e:
             print(e)
@@ -113,37 +139,25 @@ class ResultPopup(Popup):
     def __init__(self, *args, **kwargs):
         super(ResultPopup, self).__init__(*args, **kwargs)
         
-    def open(self, points, heap, correct=True, word="", article=""):
+    def open(self, correct, word, article):
         # If answer is correct, take off button if it's visible
         if correct:
+            self.title = "Inderdaad"
+            self.message.text = "[i]{}[/i] {}.".format(article, word)
             if self.close_button in self.content.children:
                 self.content.remove_widget(self.close_button)
         # If answer is not correct, display button if it's hidden
         else:
+            self.title = "Helaas..."
+            self.message.text = "Het is [b]{}[/b] {}.".format(article, word)
             if self.close_button not in self.content.children:
                 self.content.add_widget(self.close_button)
                 
-        # Prepare message to display
-        self.message.text = self._prep_message(correct)
-        
         # Display popup
         super(ResultPopup, self).open()
         if correct:
             Clock.schedule_once(self.dismiss, 1)
-            
-    def _prep_message(self, points, heap, correct=True, word="", article=""):
-        if correct:
-            return (
-                "Goed!\nEr worden {} punten bij het totaal opgeteld"
-                "en het woord gaat naar {}.".format(points, heap)
-                )
-        else:
-            return (
-                "Fout!  Het is [b]{}[/b] {}."
-                "\nEr worden {} punten bij het totaal opgeteld"
-                " en het woord gaat naar {}.".format(article, word, points, heap)
-                    )
-        
+                    
 ###########################################################################################################################################    
 class AddLocationScreen(Screen):
     """

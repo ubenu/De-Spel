@@ -29,39 +29,58 @@ class Words(object):
         '''
         self.heaps = "Nieuw Gezien Zilver Goud Platina".split()
         self.stakes = "Goud Zilver Platina".split()
-        self.answer_qual = "Fout Goed".split()
         self.heap_words = pandas.DataFrame(index=self.heaps)
         self.master_wordlist = None
         self.scoring = None
         self.player = None
         self.open_word_list(master_path)
         self.open_scoring(scoring_path)
-        self.open_personal_score(player_path)
+#        self.open_personal_score(player_path)
         if not (self.master_wordlist is None or self.scoring is None):
             if self.player is None:
                 # No Player file, therefore, take n_words from the master_wordlist and assign all the status 'Nieuw'
                 sample_index = numpy.random.choice(self.master_wordlist.index, n_words, replace=False)
                 self.player = self.master_wordlist.loc[sample_index]
-                self.player.columns.tolist().append('Stapel')
+                self.player.columns.tolist().extend(['Stapel', 'Punten'])
                 self.player.loc[:, 'Stapel'] = self.heaps[0]
+                self.player.loc[:, 'Punten'] = 0
         self.current_word_pack = None
+        self.total_score = 0
             
-    def play(self, article, stake):
-        correct_article = self.current_word_pack.Lidwoord.to_string(index=False)
-        current_heap = self.current_word_pack.Stapel.to_string(index=False)
-        print(self.calc_stakes(stake, current_heap))
-        
-    def calc_stakes(self, stake, heap, correct):
-        scoring_for_heap = self.scoring[self.scoring.Stapel.str.lower() == heap.lower()]
-        scoring_for_stake = scoring_for_heap[scoring_for_heap.Inzet.str.lower() == stake.lower()]
-        points_if_correct = '{0}'.format(scoring_for_stake[scoring_for_stake.Antwoord.str.lower() == 'goed'].Punten.iloc[0])
-        next_heap_if_correct = scoring_for_stake[scoring_for_stake.Antwoord.str.lower() == 'goed'].Bestemming.iloc[0]
-        points_if_incorrect = '{0}'.format(scoring_for_stake[scoring_for_stake.Antwoord.str.lower() == 'fout'].Punten.iloc[0])
-        next_heap_if_incorrect = scoring_for_stake[scoring_for_stake.Antwoord.str.lower() == 'fout'].Bestemming.iloc[0]
-        return {'goed': [points_if_correct, next_heap_if_correct], 'fout': [points_if_incorrect, next_heap_if_incorrect]}
-        
-        
+    def set_result(self, article, stake):
+        if self.current_word_pack is None:
+            pass
+        else:
+            correct_article = self.current_word_pack.Lidwoord.to_string(index=False)
+            heap = self.current_word_pack.Stapel.to_string(index=False)
+            result = self.get_points_and_next_heap(heap, stake, article.lower() == correct_article.lower())
+            self.total_score += result[0]
+            self.player.loc[self.current_word_pack.index[0],'Punten'] += result[0]
+            self.player.loc[self.current_word_pack.index[0],'Stapel'] = result[1]
+                
+    def get_points_and_next_heap(self, heap, stake, correct):
+            scoring_for_heap = self.scoring[self.scoring.Stapel.str.lower() == heap.lower()]
+            scoring_for_stake = scoring_for_heap[scoring_for_heap.Inzet.str.lower() == stake.lower()]
+            entry = scoring_for_stake[scoring_for_stake.Antwoord.str.lower() == 'fout']
+            if correct:
+                entry = scoring_for_stake[scoring_for_stake.Antwoord.str.lower() == 'goed']
+            return (
+                entry.Punten.iloc[0],
+                entry.Bestemming.iloc[0]
+                )
             
+    def get_total(self):
+        return self.player.Punten.sum()
+    
+    def get_heap_distribution(self):
+        dist = pandas.DataFrame(index=self.heaps, columns=["Stapel", "Aantal woorden"])
+        for h in self.heaps:
+            hps = self.player.loc[:, 'Stapel']
+            dist.loc[h,"Stapel"] = h
+            dist.loc[h,"Aantal woorden"] = hps.loc[hps==h].count()
+        return dist
+
+        
     def draw_word(self):
         sample_index = numpy.random.choice(self.player.index, 1, replace=True)
         self.current_word_pack = self.player.loc[sample_index, :]

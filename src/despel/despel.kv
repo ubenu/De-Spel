@@ -17,7 +17,7 @@
 			ActionOverflow:
 				ActionButton:
 					text: "Settings"
-					on_press: app.open_settings()
+					on_release: app.open_settings()
 					
 	ScreenManager:
 		id: kivy_screen_manager
@@ -71,10 +71,14 @@
 			
 
 <GameScreen>:
-	articles: blo_articles
-	stakes: blo_stakes
-	word: lbl_word
-	heap: lbl_heap
+	ui_articles: blo_articles
+	ui_stakes: blo_stakes
+	ui_word: lbl_word
+	ui_heap_current: lbl_heap_current
+	ui_heaps: lbl_heaps
+	ui_total: lbl_total
+	ui_draw: btn_draw
+	ui_go: btn_go
 	BoxLayout:
 		orientation: "vertical"
 		BoxLayout:
@@ -86,34 +90,39 @@
 				text: "spel"
 				
 			Label:
-				id: lbl_heap
+				id: lbl_heap_current
 				size_hint_x: 1
 				markup: True
 				text: "Stapel:\nPlatina"
 				
 			Button:
-				id: btn_new_word
+				id: btn_draw
 				size_hint_x: 1
-				markup: True	
+				markup: True
+				disabled: True	
 				text: "Nieuw woord"
-				on_release: root.on_new_word()		
+				on_release: root.on_draw()		
 
 			Button:
-				id: btn_new_word
+				id: btn_go
 				size_hint_x: 1
-				markup: True	
+				markup: True
+				disabled: True	
 				text: "Speel"
-				on_release: root.on_play()		
+				on_release: root.on_go()		
 
 		BoxLayout:
 			id: blo_articles
 			size_hint_y: 1			
 			ArticleToggle:
+				name: "De"
 				text: "De"
-				state: 'down'
+				on_release: root.on_state_changed()
 
 			ArticleToggle:
+				name: "Het"
 				text: "Het"
+				on_release: root.on_state_changed()
 
 		Label:
 			size_hint_y: 1
@@ -126,27 +135,39 @@
 			StakeToggle:
 				name: "Zilver"
 				text: "Zilver"
+				on_release: root.on_state_changed()
 
 			StakeToggle:
 				name: "Goud"
 				text: "Goud"
+				on_release: root.on_state_changed()
 
 			StakeToggle:
 				name: "Platina"
 				text: "Platina"
-				state: 'down'
+				on_release: root.on_state_changed()
 				
 		BoxLayout:
 			size_hint_y: 4
+			Label:
+				id: lbl_heaps
+				markup: True
+				align: "left"
+				size_hint_x: 3
+				text: "Nieuw:\nGezien:\nZilver:\nGoud:\nPlatina:"
+			Label:
+				id: lbl_total
+				markup: True
+				size_hint_x: 1
+				text: "Aantal punten:\n0"
 
 
 <ResultPopup>:
 	message: message
 	close_button: close_button
-	size_hint: 0.8, 0.8
+	size_hint: 0.4, 0.4
 	title: "Uitslag"
-	title_size: root.height * 0.05
-	separator_color: COLOR(GREEN)
+	title_size: root.height * 0.1
 	auto_dismiss: False
 	markup: True
 	BoxLayout:
@@ -155,7 +176,8 @@
 		spacing: min(root.width, root.height) * 0.02
 		Label:
 			id: message
-			text: "Zuigspeen tekst"
+			markup: True
+			text: ""
 			halign: "center"
 			font_size: root.height / 10
 			text_size: self.width, None
@@ -182,7 +204,7 @@
 			Button:
 				text: "Search"
 				size_hint_x: 25
-				on_press:
+				on_release:
 					root.search_location()
 			Button:
 				text: "Current location"
