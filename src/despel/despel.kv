@@ -1,10 +1,12 @@
 <StakeToggle@ToggleButton>
 	group: "grp_stake"
 	markup: True
+	font_size: min(root.height, root.width) / 5
 
 <ArticleToggle@ToggleButton>
 	group: "grp_article"
 	markup: True
+	font_size: min(root.height, root.width) / 2
 
 <DeSpelRoot>:
 	orientation: "vertical"
@@ -35,6 +37,8 @@
 
 <StartScreen@Screen>:
 	BoxLayout:
+		padding: root.width * 0.02, root.height * 0.02
+		spacing: min(root.width, root.height) * 0.02
 		orientation: "vertical"
 		padding: root.width * 0.02, root.height * 0.02
 		spacing: min(root.width, root.height) * 0.02
@@ -45,29 +49,14 @@
 			font_size: min(root.height, root.width) / 10
 			
 		Button:
-			text: "Oefenen"
-			on_release: app.root.changeScreen(self.text.lower())
-			
-		Button:
 			text: "Spelen"
+			font_size: min(root.height, root.width) / 15
 			on_release: app.root.changeScreen(self.text.lower())
 			
 		Button:
 			text: "Over deze Toep"
+			font_size: min(root.height, root.width) / 15
 			on_release: app.root.changeScreen(self.text.lower())
-			
-
-<AboutScreen@Screen>:
-	BoxLayout:
-		padding: root.width * 0.02, root.height * 0.02
-		Label:
-			text: app.getText()
-			markup: True
-			halign: "left"
-			font_size: root.height / 20
-			text_size: self.width, None 
-			center_y: 0.5
-			on_ref_press: app.on_ref_press(*args)
 			
 
 <GameScreen>:
@@ -77,43 +66,43 @@
 	ui_heap_current: lbl_heap_current
 	ui_heaps: lbl_heaps
 	ui_total: lbl_total
-	ui_draw: btn_draw
 	ui_go: btn_go
+	ui_save: btn_save
 	BoxLayout:
+		padding: root.width * 0.02, root.height * 0.02
 		orientation: "vertical"
 		BoxLayout:
+			padding: root.width * 0.02, root.height * 0.02
+			spacing: min(root.width, root.height) * 0.02
 			size_hint_y: 1
 			Label:
 				id: lbl_word
 				size_hint_x: 5
 				markup: True	
-				text: "spel"
+				font_size: min(root.height, root.width) / 15
+				text: ""
 				
 			Label:
 				id: lbl_heap_current
 				size_hint_x: 1
+				font_size: min(root.height, root.width) / 20
 				markup: True
 				text: "Stapel:\nPlatina"
 				
 			Button:
-				id: btn_draw
-				size_hint_x: 1
-				markup: True
-				disabled: True	
-				text: "Nieuw woord"
-				on_release: root.on_draw()		
-
-			Button:
 				id: btn_go
 				size_hint_x: 1
+				font_size: min(root.height, root.width) / 20
 				markup: True
 				disabled: True	
 				text: "Speel"
-				on_release: root.on_go()		
-
+				on_release: root.on_go()
+				
 		BoxLayout:
+			padding: root.width * 0.02, root.height * 0.02
+			spacing: min(root.width, root.height) * 0.02
 			id: blo_articles
-			size_hint_y: 1			
+			#size_hint_y: 1			
 			ArticleToggle:
 				name: "De"
 				text: "De"
@@ -124,42 +113,51 @@
 				text: "Het"
 				on_release: root.on_state_changed()
 
-		Label:
-			size_hint_y: 1
-			id: word_text
-			text: "Inzet: "
-
 		BoxLayout:
+			padding: root.width * 0.02, root.height * 0.02
+			spacing: min(root.width, root.height) * 0.02
 			id: blo_stakes
-			size_hint_y: 1
+			size_hint_y: 2
 			StakeToggle:
 				name: "Zilver"
-				text: "Zilver"
+				text: ""
 				on_release: root.on_state_changed()
 
 			StakeToggle:
 				name: "Goud"
-				text: "Goud"
+				text: ""
 				on_release: root.on_state_changed()
 
 			StakeToggle:
 				name: "Platina"
-				text: "Platina"
+				text: ""
 				on_release: root.on_state_changed()
 				
 		BoxLayout:
+			padding: root.width * 0.02, root.height * 0.02
+			spacing: min(root.width, root.height) * 0.02
 			size_hint_y: 4
 			Label:
 				id: lbl_heaps
 				markup: True
 				align: "left"
 				size_hint_x: 3
-				text: "Nieuw:\nGezien:\nZilver:\nGoud:\nPlatina:"
-			Label:
-				id: lbl_total
-				markup: True
-				size_hint_x: 1
-				text: "Aantal punten:\n0"
+				text: ""
+			BoxLayout:
+				orientation: "vertical"
+				Label:
+					id: lbl_total
+					markup: True
+					size_hint_x: 1
+					text: ""
+				Button:
+					id: btn_save
+					size_hint_x: 1
+					font_size: min(root.height, root.width) / 20
+					markup: True
+					disabled: False	
+					text: "Bewaar"
+					on_release: root.on_save()
 
 
 <ResultPopup>:
@@ -186,30 +184,20 @@
 			id: close_button
 			text: "Sluiten"
 			size_hint: 1, None
-			height: root.height /8
+			height: root.height / 8
 			on_release: root.dismiss()
 		
-				
-<AddLocationScreen>:
-	search_input: search_box
+<AboutScreen@Screen>:
 	BoxLayout:
-		orientation: "vertical"
-		BoxLayout:
-			height: "40dp"
-			size_hint_y: None
-			TextInput:
-				id: search_box
-				size_hint_x: 50
-				text: "krimpen"
-			Button:
-				text: "Search"
-				size_hint_x: 25
-				on_release:
-					root.search_location()
-			Button:
-				text: "Current location"
-				size_hint_x: 25
-		ListView:
-			item_strings: ["Krimpen aan de IJssel", "Krimpen aan de Lek"] 		
-
+		padding: root.width * 0.02, root.height * 0.02
+		spacing: min(root.width, root.height) * 0.02
+		Label:
+			text: app.getText()
+			markup: True
+			halign: "left"
+			font_size: root.height / 20
+			text_size: self.width, None 
+			center_y: 0.5
+			on_ref_press: app.on_ref_press(*args)
+			
 

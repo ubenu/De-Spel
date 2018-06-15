@@ -41,9 +41,10 @@ class Words(object):
                 # No Player file, therefore, take n_words from the master_wordlist and assign all the status 'Nieuw'
                 sample_index = numpy.random.choice(self.master_wordlist.index, n_words, replace=False)
                 self.player = self.master_wordlist.loc[sample_index]
-                self.player.columns.tolist().extend(['Stapel', 'Punten'])
+                self.player.columns.tolist().extend(['Stapel', 'Punten', 'Geschiedenis'])
                 self.player.loc[:, 'Stapel'] = self.heaps[0]
                 self.player.loc[:, 'Punten'] = 0
+                self.player.loc[:, 'Geschiedenis'] = ""
         self.current_word_pack = None
         self.total_score = 0
             
@@ -53,9 +54,10 @@ class Words(object):
         else:
             correct_article = self.current_word_pack.Lidwoord.to_string(index=False)
             heap = self.current_word_pack.Stapel.to_string(index=False)
-            result = self.get_points_and_next_heap(heap, stake, article.lower() == correct_article.lower())
-            self.total_score += result[0]
+            correct_answer = article.lower() == correct_article.lower()
+            result = self.get_points_and_next_heap(heap, stake, correct_answer)
             self.player.loc[self.current_word_pack.index[0],'Punten'] += result[0]
+            self.player.loc[self.current_word_pack.index[0],'Geschiedenis'] += str(int(correct_answer))
             self.player.loc[self.current_word_pack.index[0],'Stapel'] = result[1]
                 
     def get_points_and_next_heap(self, heap, stake, correct):
@@ -80,7 +82,6 @@ class Words(object):
             dist.loc[h,"Aantal woorden"] = hps.loc[hps==h].count()
         return dist
 
-        
     def draw_word(self):
         sample_index = numpy.random.choice(self.player.index, 1, replace=True)
         self.current_word_pack = self.player.loc[sample_index, :]

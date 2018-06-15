@@ -8,10 +8,11 @@ import webbrowser
 from kivy.app import App
 from kivy.uix.popup import Popup
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.screenmanager import Screen
+from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.clock import Clock
 from kivy.core.window import Window
 from kivy.properties import ObjectProperty
+
 
 from despel.words import Words
         
@@ -37,11 +38,13 @@ class DeSpelRoot(BoxLayout):
             self.ids.kivy_screen_manager.current = "add_location_screen"
         else:
             self.ids.kivy_screen_manager.current = "game_screen"
+            self.ids.kivy_screen_manager.get_screen("game_screen").on_draw()
+            
                
     def onEscBtn(self):
         # Check if there are any screens to go back to
         if self.screen_list:
-            # If there are screens we can go back to. do it
+            # If there are screens we can go back to, do it
             self.ids.kivy_screen_manager.current = self.screen_list.pop()
             # We don't want to close
             return True
@@ -62,13 +65,10 @@ class GameScreen(Screen, Words):
     def __init__(self, *args, **kwargs):
         super(Words, self).__init__()
         super(GameScreen, self).__init__(*args, **kwargs)
-        self.result_popup = ResultPopup()
-        self.ui_word.text = "Hello"
-        
+        self.result_popup = ResultPopup()        
         
     def on_state_changed(self):
         self.ui_go.disabled = True
-        self.ui_draw.disabled = True
         article, stake = '', ''
         current_word = self.ui_word.text
         for btn in self.ui_articles.children:
@@ -78,7 +78,6 @@ class GameScreen(Screen, Words):
             if btn.state == 'down':
                 stake = btn.name.lower()
         if article and stake and current_word:
-            self.ui_draw.disabled = False
             self.ui_go.disabled = False
         
     def on_go(self):
@@ -94,39 +93,46 @@ class GameScreen(Screen, Words):
             corr_art = self.current_word_pack.Lidwoord.iloc[0]
             word = self.current_word_pack.Woord.iloc[0].lower()
             correct = corr_art.lower() == article.lower()             
-            self.result_popup.open(correct, word, corr_art)
             self.ui_total.text = "Totaal: {}".format(self.get_total())
             dist = self.get_heap_distribution()
             self.ui_heaps.text = dist.to_string(index=False, justify="left")
+            self.result_popup.open(correct, word, corr_art)
+            self.on_draw()
                    
     def on_draw(self):
         self.draw_word()
         try:
             word = self.current_word_pack.Woord.to_string(index=False)
-            heap = self.current_word_pack.Stapel.to_string(index=False).lower()
+            heap = self.current_word_pack.Stapel.to_string(index=False)
             self.ui_word.text = word
-            self.ui_heap_current.text = "Stapel:\n{}".format(heap)
+            self.ui_heap_current.text = "({})".format(heap)
             for btn in self.ui_articles.children:
                 btn.state = 'normal'
             for btn in self.ui_stakes.children:
                 btn.state = 'normal'
                 btn.disabled = False 
                 stake = btn.name.lower()
-                scoring_for_heap = self.scoring[self.scoring.Stapel.str.lower() == heap]
+                scoring_for_heap = self.scoring[self.scoring.Stapel.str.lower() == heap.lower()]
                 if scoring_for_heap.Inzet.str.lower().isin([stake,]).any():
                     scoring_for_stake = scoring_for_heap[scoring_for_heap.Inzet.str.lower() == stake]
                     corr = scoring_for_stake[scoring_for_stake.Antwoord.str.lower() == 'goed']
+                    if corr.Advies.iloc[0] == 'Kies':
+                        btn.state = 'down'  
                     incorr = scoring_for_stake[scoring_for_stake.Antwoord.str.lower() == 'fout']
                     pnts_corr = corr.Punten.iloc[0]
-                    pnts_incorr = -incorr.Punten.iloc[0]
-                    btn.text = "{}\nGoed: {:d} punten erbij\nFout: {:d} punten eraf".format(btn.name, pnts_corr, pnts_incorr)
+                    pnts_incorr = incorr.Punten.iloc[0]
+                    btn.text = "{}\nGoed: +{:d}\nFout: {:d}".format(btn.name, pnts_corr, pnts_incorr)
                 else:
                     btn.text = btn.name
                     btn.disabled = True
+            self.on_state_changed()
 
         except Exception as e:
             print(e)
             print("Fout opgetreden bij trekken van nieuw woord")
+            
+    def on_save(self):
+        print(self.player)
         
 ###########################################################################################################################################    
 class ResultPopup(Popup):
