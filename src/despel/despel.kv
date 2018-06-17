@@ -66,6 +66,7 @@
 	ui_heap_current: lbl_heap_current
 	ui_heaps: lbl_heaps
 	ui_total: lbl_total
+	ui_name: txt_name
 	ui_go: btn_go
 	ui_save: btn_save
 	BoxLayout:
@@ -97,6 +98,14 @@
 				disabled: True	
 				text: "Speel"
 				on_release: root.on_go()
+			Button:
+				id: btn_save
+				size_hint_y: 1
+				font_size: min(root.height, root.width) / 20
+				markup: True
+				disabled: False	
+				text: "Bewaar"
+				on_release: root.on_save()
 				
 		BoxLayout:
 			padding: root.width * 0.02, root.height * 0.02
@@ -122,12 +131,10 @@
 				name: "Zilver"
 				text: ""
 				on_release: root.on_state_changed()
-
 			StakeToggle:
 				name: "Goud"
 				text: ""
 				on_release: root.on_state_changed()
-
 			StakeToggle:
 				name: "Platina"
 				text: ""
@@ -145,19 +152,18 @@
 				text: ""
 			BoxLayout:
 				orientation: "vertical"
+				size_hint_x: 1
 				Label:
 					id: lbl_total
+					size_hint_y: 4
 					markup: True
-					size_hint_x: 1
 					text: ""
-				Button:
-					id: btn_save
-					size_hint_x: 1
-					font_size: min(root.height, root.width) / 20
+				TextInput:
+					id: txt_name
+					sixe_hint_y: 1
+					font_size: min(root.height, root.width) / 25
 					markup: True
-					disabled: False	
-					text: "Bewaar"
-					on_release: root.on_save()
+					text: "Gast"
 
 
 <ResultPopup>:

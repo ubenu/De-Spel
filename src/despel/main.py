@@ -60,7 +60,8 @@ class GameScreen(Screen, Words):
     """
     ui_articles, ui_stakes, ui_heaps = ObjectProperty(), ObjectProperty(), ObjectProperty()
     ui_word, ui_heap_current, ui_total = ObjectProperty(), ObjectProperty(), ObjectProperty()
-    ui_draw, ui_go = ObjectProperty(), ObjectProperty()
+    ui_draw, ui_go, ui_save = ObjectProperty(), ObjectProperty(), ObjectProperty()
+    ui_name = ObjectProperty()
 
     def __init__(self, *args, **kwargs):
         super(Words, self).__init__()
@@ -69,15 +70,17 @@ class GameScreen(Screen, Words):
         
     def on_state_changed(self):
         self.ui_go.disabled = True
+        self.ui_save.disabled = True
+        if (self.player.Geschiedenis != "").all():
+            self.ui_save.disabled = False
         article, stake = '', ''
-        current_word = self.ui_word.text
         for btn in self.ui_articles.children:
             if btn.state == 'down':
                 article = btn.name.lower()
         for btn in self.ui_stakes.children:
             if btn.state == 'down':
                 stake = btn.name.lower()
-        if article and stake and current_word:
+        if article and stake:
             self.ui_go.disabled = False
         
     def on_go(self):
@@ -116,9 +119,9 @@ class GameScreen(Screen, Words):
                 if scoring_for_heap.Inzet.str.lower().isin([stake,]).any():
                     scoring_for_stake = scoring_for_heap[scoring_for_heap.Inzet.str.lower() == stake]
                     corr = scoring_for_stake[scoring_for_stake.Antwoord.str.lower() == 'goed']
-                    if corr.Advies.iloc[0] == 'Kies':
-                        btn.state = 'down'  
                     incorr = scoring_for_stake[scoring_for_stake.Antwoord.str.lower() == 'fout']
+                    if stake == self.heap_data.loc[heap].Advies.lower():
+                        btn.state = 'down'
                     pnts_corr = corr.Punten.iloc[0]
                     pnts_incorr = incorr.Punten.iloc[0]
                     btn.text = "{}\nGoed: +{:d}\nFout: {:d}".format(btn.name, pnts_corr, pnts_incorr)
@@ -132,7 +135,12 @@ class GameScreen(Screen, Words):
             print("Fout opgetreden bij trekken van nieuw woord")
             
     def on_save(self):
-        print(self.player)
+        print(self.ui_name.text)
+        name = "Gast"
+        if not self.ui_name.text == "":
+            name = self.ui_name.text
+        fname = ".//{}.csv".format(name)
+        self.player.to_csv(fname)
         
 ###########################################################################################################################################    
 class ResultPopup(Popup):
