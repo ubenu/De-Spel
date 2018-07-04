@@ -1,1 +1,1 @@
-from despel import main, words
+from despel import main, words, json_settings

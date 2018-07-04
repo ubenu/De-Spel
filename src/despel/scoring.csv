@@ -2,9 +2,9 @@ Stapel,Inzet,Goed,Fout
 Nieuw,Zilver,2,0
 Nieuw,Goud,10,-10
 Nieuw,Platina,20,-100
-Gezien,Zilver,0,0
-Gezien,Goud,5-10
-Gezien,Platina,10,-100
+Bekeken,Zilver,0,0
+Bekeken,Goud,5,-10
+Bekeken,Platina,10,-100
 Zilver,Zilver,0,-10
 Zilver,Goud,2,-20
 Zilver,Platina,4,-100

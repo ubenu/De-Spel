@@ -6,21 +6,10 @@
 <ArticleToggle@ToggleButton>
 	group: "grp_article"
 	markup: True
-	font_size: min(root.height, root.width) / 2
+	font_size: min(root.height, root.width) / 1.25
 
 <DeSpelRoot>:
-	orientation: "vertical"
-
-	ActionBar:
-		ActionView:
-			ActionPrevious:
-				with_previous: False
-				title: ""
-			ActionOverflow:
-				ActionButton:
-					text: "Settings"
-					on_release: app.open_settings()
-					
+	orientation: "vertical"	
 	ScreenManager:
 		id: kivy_screen_manager
 		StartScreen:
@@ -31,33 +20,43 @@
 		AboutScreen:
 			name: "about_screen"
 			id: about_screen
-		AddLocationScreen:
-			name: "add_location_screen"
-			id: add_location
 
-<StartScreen@Screen>:
+<StartScreen>:
+	ui_user_name: txt_user_name
 	BoxLayout:
 		padding: root.width * 0.02, root.height * 0.02
 		spacing: min(root.width, root.height) * 0.02
 		orientation: "vertical"
-		padding: root.width * 0.02, root.height * 0.02
-		spacing: min(root.width, root.height) * 0.02
-		
 		Label:
 			markup: True
 			text: "[b]De Spel[/b]"
 			font_size: min(root.height, root.width) / 10
-			
+			size_hint_y: 1
+		BoxLayout:
+			size_hint_y: 0.5
+			padding: root.width * 0.02, root.height * 0.02
+			spacing: min(root.width, root.height) * 0.02
+			Label:
+				markup: True
+				text: "Gebruikersnaam"
+				halign: 'right'
+				font_size: min(root.height, root.width) / 20
+			TextInput:
+				id: txt_user_name
+				markup: True
+				font_size: min(root.height, root.width) / 20
+				multiline: False
+				text: "gast"
 		Button:
+			size_hint_y: 1
 			text: "Spelen"
 			font_size: min(root.height, root.width) / 15
 			on_release: app.root.changeScreen(self.text.lower())
-			
 		Button:
+			size_hint_y: 1
 			text: "Over deze Toep"
 			font_size: min(root.height, root.width) / 15
-			on_release: app.root.changeScreen(self.text.lower())
-			
+			on_release: app.root.changeScreen(self.text.lower())			
 
 <GameScreen>:
 	ui_articles: blo_articles
@@ -66,7 +65,7 @@
 	ui_heap_current: lbl_heap_current
 	ui_heaps: lbl_heaps
 	ui_total: lbl_total
-	ui_name: txt_name
+	ui_user_name: lbl_name
 	ui_go: btn_go
 	ui_save: btn_save
 	BoxLayout:
@@ -75,53 +74,43 @@
 		BoxLayout:
 			padding: root.width * 0.02, root.height * 0.02
 			spacing: min(root.width, root.height) * 0.02
-			size_hint_y: 1
-			Label:
-				id: lbl_word
-				size_hint_x: 5
-				markup: True	
-				font_size: min(root.height, root.width) / 15
-				text: ""
-				
+			size_hint_y: 3
 			Label:
 				id: lbl_heap_current
 				size_hint_x: 1
-				font_size: min(root.height, root.width) / 20
+				font_size: min(root.height, root.width) / 30
 				markup: True
-				text: "Stapel:\nPlatina"
-				
+				text: ""
+			BoxLayout:
+				orientation: 'vertical'
+				size_hint_x: 5
+				padding: root.width * 0.02, root.height * 0.02
+				spacing: min(root.width, root.height) * 0.02
+				Label:
+					id: lbl_word
+					markup: True
+					font_size: min(root.height, root.width) / 10
+					text: ""				
+				BoxLayout:
+					padding: root.width * 0.02, root.height * 0.02
+					spacing: min(root.width, root.height) * 0.02
+					id: blo_articles
+					ArticleToggle:
+						name: "De"
+						text: "De"
+						on_release: root.on_state_changed()
+					ArticleToggle:
+						name: "Het"
+						text: "Het"
+						on_release: root.on_state_changed()
 			Button:
 				id: btn_go
-				size_hint_x: 1
-				font_size: min(root.height, root.width) / 20
+				size_hint_x: 1.5
+				font_size: min(root.height, root.width) / 15
 				markup: True
 				disabled: True	
 				text: "Speel"
 				on_release: root.on_go()
-			Button:
-				id: btn_save
-				size_hint_y: 1
-				font_size: min(root.height, root.width) / 20
-				markup: True
-				disabled: False	
-				text: "Bewaar"
-				on_release: root.on_save()
-				
-		BoxLayout:
-			padding: root.width * 0.02, root.height * 0.02
-			spacing: min(root.width, root.height) * 0.02
-			id: blo_articles
-			#size_hint_y: 1			
-			ArticleToggle:
-				name: "De"
-				text: "De"
-				on_release: root.on_state_changed()
-
-			ArticleToggle:
-				name: "Het"
-				text: "Het"
-				on_release: root.on_state_changed()
-
 		BoxLayout:
 			padding: root.width * 0.02, root.height * 0.02
 			spacing: min(root.width, root.height) * 0.02
@@ -139,7 +128,6 @@
 				name: "Platina"
 				text: ""
 				on_release: root.on_state_changed()
-				
 		BoxLayout:
 			padding: root.width * 0.02, root.height * 0.02
 			spacing: min(root.width, root.height) * 0.02
@@ -147,29 +135,45 @@
 			Label:
 				id: lbl_heaps
 				markup: True
-				align: "left"
+				halign: 'left'
+				font_size: min(root.height, root.width) / 25
 				size_hint_x: 3
 				text: ""
+				text_size: self.size
 			BoxLayout:
 				orientation: "vertical"
 				size_hint_x: 1
 				Label:
+					size_hint_y: 0.5
+					text: "Totaal"
+					font_size: min(root.height, root.width) / 25
+				Label:
 					id: lbl_total
 					size_hint_y: 4
 					markup: True
+					halign: 'center'
+					font_size: min(root.height, root.width) / 7.5					
 					text: ""
-				TextInput:
-					id: txt_name
+				Button:
+					id: btn_save
+					size_hint_y: 1
+					font_size: min(root.height, root.width) / 25
+					markup: True
+					disabled: False	
+					text: "Bewaar"
+					on_release: root.on_save()
+				Label:
+					id: lbl_name
 					sixe_hint_y: 1
 					font_size: min(root.height, root.width) / 25
 					markup: True
-					text: "Gast"
+					text: ""					
 
 
 <ResultPopup>:
 	message: message
 	close_button: close_button
-	size_hint: 0.4, 0.4
+	size_hint: 0.6, 0.6
 	title: "Uitslag"
 	title_size: root.height * 0.1
 	auto_dismiss: False
