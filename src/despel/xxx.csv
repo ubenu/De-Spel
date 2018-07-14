@@ -1,6 +1,15 @@
-,Unnamed: 0,Unnamed: 0.1,Woord,Lidwoord,Stapel,Punten,Geschiedenis
-0,0,458,vierkant,het,Platina,6,FGGGG
-1,1,379,sleutel,de,Platina,-10,GFGGGGG
-2,2,48,bos,het,Platina,8,GGGG
-3,3,117,gereedschap,het,Platina,-10,GFGGGGG
-4,4,362,rok,de,Platina,10,GGGGG
+Woord,Aanvullen,Geschiedenis,Lidwoord,Punten,Stapel
+leerling,0,GG,de,4.0,Goud
+steen,0,GGG,de,6.0,Platina
+helft,0,GGG,de,6.0,Platina
+fruit,0,GFFGG,het,-16.0,Goud
+woud,0,GGG,het,6.0,Platina
+kast,1,GGG,de,6.0,Platina
+maaltijd,0,GGG,de,6.0,Platina
+schaar,0,GGG,de,6.0,Platina
+heuvel,0,FGGG,de,4.0,Platina
+plaat,0,GG,de,4.0,Goud
+suiker,0,G,de,2.0,Zilver
+aap,0,G,de,2.0,Zilver
+seconde,0,G,de,2.0,Zilver
+vijand,0,G,de,2.0,Zilver

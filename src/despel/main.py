@@ -111,7 +111,7 @@ class GameScreen(Screen, Words):
                 stake = btn.name
         if article and stake:
             self.set_result(article, stake)
-            corr_art = self.current_word_pack.Lidwoord.iloc[0]
+            corr_art = self.current_word_pack.Lidwoord[0]
             word = self.current_word_pack.index[0].lower()
             correct = corr_art.lower() == article.lower()             
             self.result_popup.open(correct, word, corr_art)
@@ -120,8 +120,8 @@ class GameScreen(Screen, Words):
     def on_draw(self):
         self.draw_word()
         try:
-            word = self.current_word_pack.index[0].to_string(index=False)
-            heap = self.current_word_pack.Stapel.to_string(index=False)
+            word = self.current_word_pack.index[0] #.to_string(index=False)
+            heap = self.current_word_pack.Stapel[0] #.to_string(index=False)
             self.ui_word.text = word
             self.ui_heap_current.text = "Uit:\n{}".format(heap)
             for btn in self.ui_articles.children:
@@ -143,7 +143,7 @@ class GameScreen(Screen, Words):
             for s, n in dist.iterrows():
                 dist_str += s[0] + "  " + n[0] * '|' + '\n'
             self.ui_total.text = "{}".format(self.get_total())                
-            self.ui_heaps.text = dist_str #dist.to_string(justify="left")
+            self.ui_heaps.text = dist_str 
         except Exception as e:
             print(e)
             

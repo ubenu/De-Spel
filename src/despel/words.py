@@ -42,33 +42,43 @@ class Words(object):
         player_path=""
         if user_name != "" and user_name.lower() != "gast":
             player_path = ".//{}.csv".format(user_name)
-        self.open_personal_score(player_path)
+        self.open_player(player_path)
         if self.player is None:
             sample_index = numpy.random.choice(self.master_wordlist.index, self.n_words, replace=False)
             self.player = self.master_wordlist.loc[sample_index]
-            self.player.columns.tolist().extend(['Stapel', 'Punten', 'Geschiedenis'])
             self.player.loc[:, 'Stapel'] = self.heaps[0]
+            self.player.loc[:, 'Aanvullen'] = 0
             self.player.loc[:, 'Punten'] = 0
             self.player.loc[:, 'Geschiedenis'] = ""  
         else:  
-            player_index = self.player.index
-            print(player_index)
-            distr = self.get_heap_distribution()
-            print(distr.loc['Platina','n'])
-            #sample_index = self.draw_sample(distr.loc['Platina','n'])
+            n_pt = self.get_new_pt()
+            if n_pt > 0:
+                new_index = self.master_wordlist.index.drop(self.player.index)
+                sample_index = numpy.random.choice(new_index, n_pt, replace=False)
+                new_words = self.master_wordlist.loc[sample_index]
+                new_words.loc[:, 'Stapel'] = self.heaps[0]
+                new_words.loc[:, 'Punten'] = 0
+                new_words.loc[:, 'Geschiedenis'] = "" 
+                self.player = self.player.append(new_words)
+                self.player.loc[:, 'Aanvullen'] = 0
             
     def set_result(self, article, stake):
-        heap = self.current_word_pack.Stapel.to_string(index=False)
-        correct = article.lower() == self.current_word_pack.Lidwoord.to_string(index=False).lower()
+        heap = self.current_word_pack.Stapel[0] #.to_string(index=False)
+        correct = article.lower() == self.current_word_pack.Lidwoord[0].lower()
         score = self.scoring.loc[(heap, stake),][['Fout','Goed']]
         destination = ("Bekeken", stake)
+        new_pt = (0, int(heap != "Platina" and stake == "Platina"))
         s = ('F', 'G')[correct]
         self.player.loc[self.current_word_pack.index[0],'Punten'] += int(score[correct])
+        self.player.loc[self.current_word_pack.index[0], 'Aanvullen'] = new_pt[correct]
         self.player.loc[self.current_word_pack.index[0],'Stapel'] = destination[correct]
         self.player.loc[self.current_word_pack.index[0],'Geschiedenis'] += s
                 
     def get_total(self):
         return self.player.Punten.sum()
+    
+    def get_new_pt(self):
+        return self.player.Aanvullen.sum()
     
     def get_heap_distribution(self):
         dist = pandas.DataFrame(index=self.heaps, columns=["n",])
@@ -86,7 +96,7 @@ class Words(object):
             if word != p_word: # So that a word is not drawn multiple times in a row
                 for heap, row_heap in self.heap_data.iterrows():
                     if row.Stapel == heap:
-                        probs.extend(int(row_heap.Trekkans) * [p_word])
+                        probs.extend(int(row_heap.Kans) * [p_word])
         sample = numpy.random.choice(probs, 1, replace=True)
         self.current_word_pack = self.player.loc[sample, :]
 
@@ -111,12 +121,13 @@ class Words(object):
             print(e)
             print("No heap data")
 
-    def open_personal_score(self, file_path):
+    def open_player(self, file_path):
         try:
-            self.player = pandas.read_csv(file_path) 
-        except Exception as e:
-            print(e)
-            print("No player data")
+            self.player = pandas.read_csv(file_path, index_col=0) 
+        except Exception:
+            pass
+#             print(e)
+#             print("No player data")
             
     def save_player(self, user_name):
         fname = ".//{}.csv".format(user_name)
