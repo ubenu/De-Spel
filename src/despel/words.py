@@ -4,10 +4,52 @@ Created on 31 May 2018
 @author: SchilsM
 '''
 
-import pandas
+import sqlite3
+import csv
+import random
+
 import numpy
+import pandas
 
 
+
+class AllWords(object):
+    """
+    For storing in and retrieving from memory all available words in the game.
+    """
+    def create_db(self, file_path=""):
+        """
+        Creates the master word database
+        """
+        try:
+            master_path = file_path
+            if master_path == "":
+                master_path=".//master_wordlist.csv"
+            with open(master_path) as master_csv:
+                reader = csv.reader(master_csv)
+                for row in reader:
+                    print(', '.join(row))
+        except Exception as e:
+            print(e)
+            print("No master wordlist")
+                       
+        # Create a database in RAM
+        db = sqlite3.connect(':memory:')        
+        cursor = db.cursor()
+        cursor.execute('''
+            CREATE TABLE all_words(id INTEGER PRIMARY KEY, word TEXT,
+                               article TEXT, meaning TEXT, translation TEXT)
+        ''')
+        
+    def open_word_list(self, file_path):
+        # Reads from csv, but should be able to read it from sqlite db, without using pandas
+        try:
+            self.master_wordlist = pandas.read_csv(file_path, index_col=0).loc[:,['Lidwoord']]
+        except Exception as e:
+            print(e)
+            print("No master wordlist")
+    
+    
 
 class Words(object):
     '''
@@ -20,10 +62,11 @@ class Words(object):
         '''
         super(Words, self).__init__()
         master_path=".//master_wordlist.csv"
+        aw = AllWords().create_db(master_path)
         scoring_path=".//scoring.csv"
         heap_data_path=".//heap_data.csv"
         n_words=5
-        self.n_words = n_words, 
+        self.n_words = n_words 
         self.heaps = "Nieuw Bekeken Zilver Goud Platina".split()
         self.stakes = "Goud Zilver Platina".split()
         self.heap_words = pandas.DataFrame(index=self.heaps)
@@ -37,6 +80,7 @@ class Words(object):
         self.current_word_pack = None
         self.previous_word_pack = None
         
+        
     def setup_player(self, user_name):
         self.player = None
         player_path=""
@@ -44,7 +88,7 @@ class Words(object):
             player_path = ".//{}.csv".format(user_name)
         self.open_player(player_path)
         if self.player is None:
-            sample_index = numpy.random.choice(self.master_wordlist.index, self.n_words, replace=False)
+            sample_index = random.sample(self.master_wordlist.index.tolist(), self.n_words) # numpy.random.choice(self.master_wordlist.index, self.n_words, replace=False)
             self.player = self.master_wordlist.loc[sample_index]
             self.player.loc[:, 'Stapel'] = self.heaps[0]
             self.player.loc[:, 'Aanvullen'] = 0
@@ -132,4 +176,6 @@ class Words(object):
     def save_player(self, user_name):
         fname = ".//{}.csv".format(user_name)
         self.player.to_csv(fname)
+        
+        
       
